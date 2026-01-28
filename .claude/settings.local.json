@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pandoc:*)",
+      "WebSearch",
+      "mcp__plugin_context7_context7__resolve-library-id",
+      "mcp__plugin_context7_context7__query-docs",
+      "Bash(npm install:*)",
+      "Bash(unzip:*)",
+      "Bash(chmod:*)",
+      "Bash(cargo update:*)",
+      "Bash(cargo check:*)",
+      "Bash(npm run build:*)",
+      "Bash(npm run tauri:*)",
+      "Bash(aws s3api put-public-access-block:*)",
+      "Bash(aws s3api put-bucket-policy:*)",
+      "Bash(aws s3 cp:*)",
+      "Bash(npx create-next-app:*)"
+    ]
+  }
+}

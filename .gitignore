@@ -1,0 +1,24 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+src-tauri/target/
+md-docx-website/.next/
+
+# Pandoc binary (download separately)
+src-tauri/resources/pandoc/pandoc
+src-tauri/resources/pandoc/pandoc.exe
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+
+# Vercel
+.vercel/
+
+# Temp
+bucket-policy.json
