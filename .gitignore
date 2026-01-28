@@ -2,13 +2,13 @@
 node_modules/
 
 # Build outputs
-dist/
-src-tauri/target/
-md-docx-website/.next/
+apps/desktop/dist/
+apps/desktop/src-tauri/target/
+apps/website/.next/
 
 # Pandoc binary (download separately)
-src-tauri/resources/pandoc/pandoc
-src-tauri/resources/pandoc/pandoc.exe
+apps/desktop/src-tauri/resources/pandoc/pandoc
+apps/desktop/src-tauri/resources/pandoc/pandoc.exe
 
 # IDE
 .vscode/

@@ -1,27 +1,11 @@
 {
-  "name": "md-docx-converter",
+  "name": "md-docx-converter-monorepo",
   "private": true,
-  "version": "1.0.0",
-  "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc && vite build",
-    "preview": "vite preview",
-    "tauri": "tauri"
-  },
-  "dependencies": {
-    "@tauri-apps/api": "^2",
-    "@tauri-apps/plugin-dialog": "^2.6.0",
-    "@tauri-apps/plugin-opener": "^2",
-    "react": "^19.1.0",
-    "react-dom": "^19.1.0"
-  },
-  "devDependencies": {
-    "@tauri-apps/cli": "^2",
-    "@types/react": "^19.1.8",
-    "@types/react-dom": "^19.1.6",
-    "@vitejs/plugin-react": "^4.6.0",
-    "typescript": "~5.8.3",
-    "vite": "^7.0.4"
+    "desktop:dev": "cd apps/desktop && npm run dev",
+    "desktop:build": "cd apps/desktop && npm run build",
+    "desktop:tauri": "cd apps/desktop && npm run tauri",
+    "website:dev": "cd apps/website && npm run dev",
+    "website:build": "cd apps/website && npm run build"
   }
 }

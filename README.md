@@ -13,45 +13,60 @@ Cross-platform desktop app for bidirectional conversion between Markdown and Wor
 ## Tech Stack
 
 - **Framework:** Tauri v2 (Rust + WebView)
-- **Frontend:** React 18 + TypeScript + Vite
+- **Frontend:** React 19 + TypeScript + Vite
 - **Converter:** Pandoc (bundled)
-
-## Development
-
-```bash
-# Install dependencies
-npm install
-
-# Run in dev mode
-npm run tauri dev
-
-# Build for production
-npm run tauri build
-```
-
-## Pandoc Setup
-
-For development, download Pandoc for your platform and place in `src-tauri/resources/pandoc/`:
-
-- [macOS arm64](https://github.com/jgm/pandoc/releases)
-- [macOS x64](https://github.com/jgm/pandoc/releases)
-- [Windows x64](https://github.com/jgm/pandoc/releases)
-- [Linux x64](https://github.com/jgm/pandoc/releases)
 
 ## Project Structure
 
 ```
-├── src/                     # React frontend
-│   ├── components/          # UI components
-│   ├── hooks/               # Custom hooks
-│   └── App.tsx              # Main app
-├── src-tauri/               # Rust backend
-│   ├── src/
-│   │   ├── commands/        # Tauri commands
-│   │   └── pandoc/          # Pandoc executor
-│   └── resources/pandoc/    # Bundled Pandoc
-└── docs/                    # Documentation
+├── apps/
+│   ├── desktop/              # Tauri desktop app
+│   │   ├── src/              # React frontend
+│   │   ├── src-tauri/        # Rust backend
+│   │   └── package.json
+│   └── website/              # Next.js marketing site
+│       ├── app/
+│       └── package.json
+├── docs/                     # Documentation
+├── install.sh                # Install script
+└── package.json              # Root convenience scripts
 ```
+
+## Development
+
+```bash
+# Desktop app
+cd apps/desktop
+npm install
+npm run tauri dev
+
+# Website
+cd apps/website
+npm install
+npm run dev
+
+# Or from root
+npm run desktop:dev
+npm run website:dev
+```
+
+## Building
+
+```bash
+# Desktop app
+cd apps/desktop
+npm run tauri build
+
+# Website
+cd apps/website
+npm run build
+```
+
+## Pandoc Setup
+
+For development, download Pandoc for your platform and place in `apps/desktop/src-tauri/resources/pandoc/`:
+
+- [Pandoc releases](https://github.com/jgm/pandoc/releases)
 
 ## License
 
