@@ -1,4 +1,5 @@
-use crate::pandoc::{get_pandoc_path, run_conversion};
+use crate::commands::detect::is_mmdc_available;
+use crate::pandoc::{get_pandoc_path, get_resource_dir, run_conversion, run_conversion_with_args, ConversionArgs};
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::Path;
@@ -19,8 +20,11 @@ pub async fn convert_md_to_docx(
     output_path: String,
 ) -> Result<ConversionResult, String> {
     let pandoc = get_pandoc_path(&app_handle)?;
+    let resource_dir = get_resource_dir(&app_handle)?;
+    let mmdc = is_mmdc_available();
+    let extra_args = ConversionArgs::build_for_md_to_docx(&resource_dir, &input_path, mmdc);
 
-    match run_conversion(&pandoc, &input_path, &output_path, "markdown", "docx") {
+    match run_conversion_with_args(&pandoc, &input_path, &output_path, "markdown", "docx", &extra_args) {
         Ok(()) => Ok(ConversionResult {
             input: input_path,
             output: output_path,
@@ -76,6 +80,13 @@ pub async fn convert_batch(
         ("md", "docx", "markdown")
     };
 
+    // For MD→DOCX: resolve resources + detect mmdc once for the batch
+    let enterprise_ctx = if to_docx {
+        Some((get_resource_dir(&app_handle)?, is_mmdc_available()))
+    } else {
+        None
+    };
+
     for input_path in files {
         let input = Path::new(&input_path);
         let stem = input.file_stem().unwrap_or_default().to_string_lossy();
@@ -84,7 +95,14 @@ pub async fn convert_batch(
             .to_string_lossy()
             .to_string();
 
-        match run_conversion(&pandoc, &input_path, &output_path, from_format, to_format) {
+        let result = if let Some((ref resource_dir, mmdc)) = enterprise_ctx {
+            let extra_args = ConversionArgs::build_for_md_to_docx(resource_dir, &input_path, mmdc);
+            run_conversion_with_args(&pandoc, &input_path, &output_path, from_format, to_format, &extra_args)
+        } else {
+            run_conversion(&pandoc, &input_path, &output_path, from_format, to_format)
+        };
+
+        match result {
             Ok(()) => results.push(ConversionResult {
                 input: input_path,
                 output: output_path,
