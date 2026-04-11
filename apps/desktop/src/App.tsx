@@ -4,9 +4,10 @@ import { open } from '@tauri-apps/plugin-dialog';
 import { ConversionToggle } from './components/ConversionToggle';
 import { FileDropZone } from './components/FileDropZone';
 import { FileList } from './components/FileList';
-import { ProgressBar } from './components/ProgressBar';
-import { ResultsList } from './components/ResultsList';
-import { useConversion } from './hooks/useConversion';
+import { QueueStatus } from './components/QueueStatus';
+import { HistorySidebar } from './components/HistorySidebar';
+import { useQueue } from './hooks/useQueue';
+import { useHistory } from './hooks/useHistory';
 import './App.css';
 
 function App() {
@@ -14,8 +15,13 @@ function App() {
   const [files, setFiles] = useState<string[]>([]);
   const [outputDir, setOutputDir] = useState<string>('');
 
-  const { isConverting, progress, results, error, convertBatch, reset } =
-    useConversion();
+  const history = useHistory();
+
+  const queue = useQueue({
+    onItemComplete: (item) => {
+      history.addEntry(item);
+    },
+  });
 
   const extension = toDocx ? '.md' : '.docx';
   const filterName = toDocx ? 'Markdown' : 'Word Document';
@@ -39,7 +45,6 @@ function App() {
     });
 
     if (selected && typeof selected === 'string') {
-      // Scan folder for matching files
       const ext = toDocx ? 'md' : 'docx';
       try {
         const foundFiles = await invoke<string[]>('scan_directory', {
@@ -48,7 +53,6 @@ function App() {
         });
         if (foundFiles.length > 0) {
           setFiles((prev) => [...prev, ...foundFiles]);
-          // Also set as output dir if not already set
           if (!outputDir) {
             setOutputDir(selected);
           }
@@ -75,29 +79,20 @@ function App() {
 
   const handleClearFiles = useCallback(() => {
     setFiles([]);
-    reset();
-  }, [reset]);
+  }, []);
 
-  const handleConvert = useCallback(async () => {
+  const handleAddToQueue = useCallback(() => {
     if (files.length === 0 || !outputDir) return;
+    queue.addToQueue(files, outputDir, toDocx);
+    setFiles([]);
+  }, [files, outputDir, toDocx, queue]);
 
-    try {
-      await convertBatch(files, outputDir, toDocx);
-    } catch (e) {
-      console.error('Conversion failed:', e);
-    }
-  }, [files, outputDir, toDocx, convertBatch]);
+  const handleModeChange = useCallback((newToDocx: boolean) => {
+    setToDocx(newToDocx);
+    setFiles([]);
+  }, []);
 
-  const handleModeChange = useCallback(
-    (newToDocx: boolean) => {
-      setToDocx(newToDocx);
-      setFiles([]);
-      reset();
-    },
-    [reset]
-  );
-
-  const canConvert = files.length > 0 && outputDir && !isConverting;
+  const canAdd = files.length > 0 && !!outputDir;
 
   return (
     <div className="app">
@@ -105,67 +100,70 @@ function App() {
         <h1>MD ↔ DOCX Converter</h1>
       </header>
 
-      <main className="app-main">
-        <ConversionToggle
-          toDocx={toDocx}
-          onChange={handleModeChange}
-          disabled={isConverting}
-        />
+      <div className="app-body">
+        <main className="app-main">
+          <ConversionToggle
+            toDocx={toDocx}
+            onChange={handleModeChange}
+            disabled={false}
+          />
 
-        <FileDropZone
-          onFilesSelected={(paths) => setFiles((prev) => [...prev, ...paths])}
-          onSelectFiles={handleSelectFiles}
-          onSelectFolder={handleSelectFolder}
-          disabled={isConverting}
-          acceptedExtension={extension}
-        />
+          <FileDropZone
+            onFilesSelected={(paths) => setFiles((prev) => [...prev, ...paths])}
+            onSelectFiles={handleSelectFiles}
+            onSelectFolder={handleSelectFolder}
+            disabled={false}
+            acceptedExtension={extension}
+          />
 
-        <FileList
-          files={files}
-          onRemove={handleRemoveFile}
-          onClear={handleClearFiles}
-          disabled={isConverting}
-        />
+          <FileList
+            files={files}
+            onRemove={handleRemoveFile}
+            onClear={handleClearFiles}
+            disabled={false}
+          />
 
-        <div className="output-section">
-          <label className="output-label">Output Directory:</label>
-          <div className="output-row">
-            <input
-              type="text"
-              className="output-input"
-              value={outputDir}
-              readOnly
-              placeholder="Select output directory..."
-            />
+          <div className="output-section">
+            <label className="output-label">Output Directory:</label>
+            <div className="output-row">
+              <input
+                type="text"
+                className="output-input"
+                value={outputDir}
+                readOnly
+                placeholder="Select output directory..."
+              />
+              <button onClick={handleSelectOutputDir}>Browse</button>
+            </div>
+          </div>
+
+          <QueueStatus
+            items={queue.items}
+            onRemove={queue.removeItem}
+            onClearCompleted={queue.clearCompleted}
+          />
+
+          <div className="action-section">
             <button
-              onClick={handleSelectOutputDir}
-              disabled={isConverting}
+              className="convert-btn"
+              onClick={handleAddToQueue}
+              disabled={!canAdd}
             >
-              Browse
+              {files.length > 0
+                ? `Add ${files.length} File(s) to Queue`
+                : 'Select Files to Convert'}
             </button>
           </div>
-        </div>
+        </main>
 
-        <ProgressBar
-          current={progress.current}
-          total={progress.total}
-          isConverting={isConverting}
+        <HistorySidebar
+          entries={history.entries}
+          isLoading={history.isLoading}
+          onOpen={history.openFile}
+          onDelete={history.deleteOutputFile}
+          onRemoveEntry={history.removeEntry}
         />
-
-        {error && <div className="error-message">{error}</div>}
-
-        <ResultsList results={results} />
-
-        <div className="action-section">
-          <button
-            className="convert-btn"
-            onClick={handleConvert}
-            disabled={!canConvert}
-          >
-            {isConverting ? 'Converting...' : `Convert ${files.length} File(s)`}
-          </button>
-        </div>
-      </main>
+      </div>
     </div>
   );
 }

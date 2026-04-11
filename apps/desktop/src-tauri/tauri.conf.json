@@ -13,8 +13,10 @@
     "windows": [
       {
         "title": "MD ↔ DOCX Converter",
-        "width": 600,
-        "height": 500,
+        "width": 960,
+        "height": 640,
+        "minWidth": 760,
+        "minHeight": 500,
         "resizable": true
       }
     ],
@@ -36,7 +38,9 @@
       "icons/icon.ico"
     ],
     "resources": {
-      "resources/pandoc/*": "./"
+      "resources/pandoc/pandoc": "./pandoc",
+      "resources/pandoc/reference.docx": "./reference.docx",
+      "resources/pandoc/filters/*": "./filters/"
     }
   }
 }
