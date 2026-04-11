@@ -1,5 +1,5 @@
 export const S3_BASE = 'https://dt-md-docx-downloads.s3.amazonaws.com';
-export const VERSION = '1.0.0';
+export const VERSION = '2.0.0';
 
 export interface Download {
   url?: string;
